@@ -11,6 +11,8 @@ export interface BlobDef {
   size: number;
   /** Organic border-radius to make it blobby */
   borderRadius: string;
+  /** Chord name from synthEngine (e.g. "EbMaj", "DMaj7") */
+  chord: string;
   /** Placeholder — Samuel will provide actual audio files */
   audioSrc: string;
 }
@@ -24,6 +26,7 @@ export const blobs: BlobDef[] = [
     y: 12,
     size: 52,
     borderRadius: "62% 38% 46% 54% / 60% 44% 56% 40%",
+    chord: "EbMaj",
     audioSrc: "/audio/blob-a.mp3",
   },
   {
@@ -34,6 +37,7 @@ export const blobs: BlobDef[] = [
     y: 22,
     size: 46,
     borderRadius: "44% 56% 63% 37% / 55% 38% 62% 45%",
+    chord: "DMaj",
     audioSrc: "/audio/blob-b.mp3",
   },
   {
@@ -44,6 +48,7 @@ export const blobs: BlobDef[] = [
     y: 38,
     size: 56,
     borderRadius: "55% 45% 38% 62% / 42% 58% 42% 58%",
+    chord: "FMaj",
     audioSrc: "/audio/blob-c.mp3",
   },
   {
@@ -54,6 +59,7 @@ export const blobs: BlobDef[] = [
     y: 50,
     size: 48,
     borderRadius: "48% 52% 58% 42% / 62% 40% 60% 38%",
+    chord: "DMaj7",
     audioSrc: "/audio/blob-d.mp3",
   },
   {
@@ -64,6 +70,7 @@ export const blobs: BlobDef[] = [
     y: 62,
     size: 50,
     borderRadius: "58% 42% 50% 50% / 45% 55% 45% 55%",
+    chord: "FMaj7",
     audioSrc: "/audio/blob-e.mp3",
   },
   {
@@ -74,6 +81,7 @@ export const blobs: BlobDef[] = [
     y: 75,
     size: 44,
     borderRadius: "42% 58% 45% 55% / 58% 42% 55% 45%",
+    chord: "Gmin",
     audioSrc: "/audio/blob-f.mp3",
   },
 ];

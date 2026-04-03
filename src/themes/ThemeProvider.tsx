@@ -15,7 +15,7 @@ export function useTheme() {
 
 function ThemeProviderInner({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
-  const styleParam = searchParams.get("style") || "a";
+  const styleParam = searchParams.get("style") || "b";
   const theme = themes[styleParam] || defaultTheme;
 
   const isViewport = theme.layout === "single-viewport";

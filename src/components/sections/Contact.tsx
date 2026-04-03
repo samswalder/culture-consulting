@@ -18,11 +18,11 @@ export default function Contact() {
 
   if (compact) {
     return (
-      <section
-        className="py-3 px-6"
-        style={{ borderTop: `1px solid ${theme.colors.border}` }}
-      >
-        <div className="max-w-2xl">
+      <section className="py-3 px-6">
+        <div
+          className="max-w-3xl pt-3"
+          style={{ borderTop: `1px solid ${theme.colors.border}` }}
+        >
           <p ref={headingRef} className="text-sm leading-relaxed mb-2">
             {description}
           </p>

@@ -54,13 +54,15 @@ export default function Testimonials() {
   return (
     <section
       className={compact ? "py-3 px-6" : "py-10 px-6"}
-      style={
-        compact
-          ? { borderTop: `1px solid ${theme.colors.border}` }
-          : undefined
-      }
     >
-      <div className={compact ? "max-w-2xl" : "max-w-xl mx-auto"}>
+      <div
+        className={compact ? "max-w-3xl pt-3" : "max-w-xl mx-auto"}
+        style={
+          compact
+            ? { borderTop: `1px solid ${theme.colors.border}` }
+            : undefined
+        }
+      >
         <h2
           ref={headingRef}
           className={

@@ -14,7 +14,7 @@ export const content = {
   },
 
   testimonials: {
-    sectionLabel: "What clients say",
+    sectionLabel: "Word on the street is...",
     items: [
       {
         quote:
@@ -46,7 +46,6 @@ export const content = {
       "CEO + CTO of a deeptech music startup, advising alongside Rick Rubin",
       "CBO of a well-known public company",
       "Real estate CEO expanding a Michelin-starred restaurant",
-      "Team running psychedelic ceremonies",
       "Managing Partner of a VC firm",
     ],
     philosophyIntro: "My working philosophy comes from science and art.",

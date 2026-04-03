@@ -1,16 +1,28 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useTheme } from "@/themes/ThemeProvider";
-import { blobs } from "@/lib/blobConfig";
+import { blobs as blobDefs, type BlobDef } from "@/lib/blobConfig";
+import { synthEngine } from "@/lib/synthEngine";
+import { drumMachine } from "@/lib/drumMachine";
 import BlobCircle from "./BlobCircle";
 import ConnectionLines from "./ConnectionLines";
+
+/** Randomize blob positions slightly on each page load */
+function randomizeBlobs(defs: BlobDef[]): BlobDef[] {
+  return defs.map((blob) => ({
+    ...blob,
+    x: blob.x + (Math.random() - 0.5) * 14,
+    y: blob.y + (Math.random() - 0.5) * 10,
+  }));
+}
 
 /** Check if a point is within a blob's hit area */
 function hitTest(
   clientX: number,
   clientY: number,
-  container: HTMLDivElement
+  container: HTMLDivElement,
+  blobs: BlobDef[]
 ): string | null {
   const rect = container.getBoundingClientRect();
   const x = clientX - rect.left;
@@ -27,8 +39,17 @@ function hitTest(
   return null;
 }
 
-export default function BlobPlayground() {
+/** Whether the linear chain should loop (easy toggle for later) */
+const LOOP_PROGRESSION = false;
+
+export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
   const { theme } = useTheme();
+
+  // Randomize positions on the client only (avoids SSR hydration mismatch)
+  const [blobs, setBlobs] = useState(blobDefs);
+  useEffect(() => {
+    setBlobs(randomizeBlobs(blobDefs));
+  }, []);
 
   const [chain, setChain] = useState<string[]>([]);
   const [dragFrom, setDragFrom] = useState<string | null>(null);
@@ -39,20 +60,53 @@ export default function BlobPlayground() {
   } | null>(null);
   const [justConnectedId, setJustConnectedId] = useState<string | null>(null);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [playingBlobId, setPlayingBlobId] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pointerDownTime = useRef(0);
   const pointerDownPos = useRef({ x: 0, y: 0 });
   const dragFromRef = useRef<string | null>(null);
   const chainRef = useRef<string[]>([]);
+  const blobsRef = useRef(blobs);
+  const singleChordTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Blob ID → chord name lookup
+  const blobChordMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const b of blobs) {
+      map[b.id] = b.chord;
+    }
+    return map;
+  }, [blobs]);
 
   // Keep refs in sync with state
+  useEffect(() => {
+    blobsRef.current = blobs;
+  }, [blobs]);
   useEffect(() => {
     dragFromRef.current = dragFrom;
   }, [dragFrom]);
   useEffect(() => {
     chainRef.current = chain;
   }, [chain]);
+
+  // Sync mute state with synth engine + drums
+  useEffect(() => {
+    const m = isMuted ?? false;
+    synthEngine.setMuted(m);
+    drumMachine.setMuted(m);
+    if (m) setPlayingBlobId(null);
+  }, [isMuted]);
+
+  // Set up progression callbacks
+  useEffect(() => {
+    synthEngine.onChordStart = (blobId: string) => setPlayingBlobId(blobId);
+    synthEngine.onChordEnd = () => {}; // next onChordStart handles the switch
+    synthEngine.onProgressionEnd = () => {
+      setPlayingBlobId(null);
+      drumMachine.stop();
+    };
+  }, []);
 
   const activeBlobs = new Set(chain);
 
@@ -62,6 +116,33 @@ export default function BlobPlayground() {
     const timer = setTimeout(() => setJustConnectedId(null), 500);
     return () => clearTimeout(timer);
   }, [justConnectedId]);
+
+  // Initialize audio engines on first user gesture
+  const ensureAudio = useCallback(async () => {
+    if (!synthEngine.isInitialized()) await synthEngine.init();
+    if (!drumMachine.isInitialized()) await drumMachine.init();
+  }, []);
+
+  /** Play a single chord on click (not tied to progression) */
+  const playSingleChord = useCallback(
+    (blobId: string) => {
+      const chord = blobChordMap[blobId];
+      if (!chord) return;
+
+      // Clear any previous single-chord timer
+      if (singleChordTimer.current) clearTimeout(singleChordTimer.current);
+
+      synthEngine.playChord(chord, 3);
+      setPlayingBlobId(blobId);
+
+      singleChordTimer.current = setTimeout(() => {
+        // Only clear if still showing this blob (progression may have taken over)
+        setPlayingBlobId((prev) => (prev === blobId ? null : prev));
+        singleChordTimer.current = null;
+      }, 3000);
+    },
+    [blobChordMap]
+  );
 
   // --- Pointer move: track drag line and detect hover targets ---
   useEffect(() => {
@@ -80,7 +161,6 @@ export default function BlobPlayground() {
       const container = containerRef.current;
 
       if (!source || !container) {
-        // No drag was happening — clear just in case
         setDragFrom(null);
         setDragLine(null);
         return;
@@ -92,28 +172,69 @@ export default function BlobPlayground() {
       const moveDist = Math.sqrt(dx * dx + dy * dy);
       const isClick = elapsed < 300 && moveDist < 8;
 
-      const targetId = hitTest(e.clientX, e.clientY, container);
+      const targetId = hitTest(
+        e.clientX,
+        e.clientY,
+        container,
+        blobsRef.current
+      );
 
       if (isClick && targetId === source) {
-        // Click on the same blob — deactivate it
+        // Click on a blob — play its chord
+        playSingleChord(source);
+
+        // If in chain, deactivate it + stop progression + stop drums
         const prev = chainRef.current;
         const lastIndex = prev.lastIndexOf(source);
         if (lastIndex !== -1) {
           setChain(prev.slice(0, lastIndex));
+          synthEngine.stopProgression();
+          drumMachine.stop();
         }
       } else if (targetId && targetId !== source) {
         // Dragged to a different blob — create connection
-        setChain((prev) => {
-          if (prev.length === 0) {
-            return [source, targetId];
-          }
-          const last = prev[prev.length - 1];
-          if (last === source) {
-            return [...prev, targetId];
-          }
-          return [source, targetId];
-        });
+        const prev = chainRef.current;
+        const isExtending = prev.length > 0 && prev[prev.length - 1] === source;
+
+        let newChain: string[];
+        if (prev.length === 0) {
+          newChain = [source, targetId];
+        } else if (isExtending) {
+          newChain = [...prev, targetId];
+        } else {
+          newChain = [source, targetId];
+        }
+
+        // Detect loop: last blob matches the first blob in the chain
+        const isLoop =
+          newChain.length > 2 && newChain[newChain.length - 1] === newChain[0];
+
+        setChain(newChain);
         setJustConnectedId(targetId);
+
+        // Build chord map from current blobs
+        const chordMap: Record<string, string> = {};
+        for (const b of blobsRef.current) {
+          chordMap[b.id] = b.chord;
+        }
+
+        if (isExtending && isLoop) {
+          // Closing a loop — don't add duplicate, just enable looping
+          // Synth chain stays [A,B,C], loops back to A after C
+          synthEngine.enableLoop();
+          if (!drumMachine.isRunning()) drumMachine.start();
+        } else if (isExtending) {
+          // Smoothly append — don't restart current playback
+          synthEngine.appendToProgression(targetId, chordMap);
+          if (!drumMachine.isRunning()) drumMachine.start();
+        } else {
+          // Brand new chain — start fresh
+          synthEngine.playProgression(newChain, chordMap, {
+            loop: isLoop,
+            chordDuration: 3,
+          });
+          drumMachine.start();
+        }
       }
 
       // Always clear drag state
@@ -127,17 +248,18 @@ export default function BlobPlayground() {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
-  }, []);
+  }, [playSingleChord]);
 
-  // --- Blob pointer down: start drag ---
+  // --- Blob pointer down: start drag + init audio ---
   const handleBlobPointerDown = useCallback(
     (id: string, e: React.PointerEvent) => {
       e.preventDefault();
+      ensureAudio();
       pointerDownTime.current = Date.now();
       pointerDownPos.current = { x: e.clientX, y: e.clientY };
       setDragFrom(id);
     },
-    []
+    [ensureAudio]
   );
 
   // Don't render for non-compact themes
@@ -162,6 +284,7 @@ export default function BlobPlayground() {
           isActive={activeBlobs.has(blob.id)}
           isDragSource={dragFrom === blob.id}
           justConnected={justConnectedId === blob.id}
+          isPlaying={playingBlobId === blob.id}
           onPointerDown={handleBlobPointerDown}
         />
       ))}

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { audioManager } from "@/lib/audioManager";
+import { synthEngine } from "@/lib/synthEngine";
+import { drumMachine } from "@/lib/drumMachine";
 
 /**
  * Hook for triggering audio on scroll or interaction events.
@@ -39,6 +41,8 @@ export function useAudioTrigger() {
   const toggleMute = useCallback(() => {
     const newMuted = !audioManager.isMuted();
     audioManager.setMuted(newMuted);
+    synthEngine.setMuted(newMuted);
+    drumMachine.setMuted(newMuted);
     setIsMuted(newMuted);
   }, []);
 

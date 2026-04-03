@@ -6,7 +6,6 @@ import Testimonials from "@/components/sections/Testimonials";
 import Bio from "@/components/sections/Bio";
 import Contact from "@/components/sections/Contact";
 import AudioToggle from "@/components/AudioToggle";
-import StyleSwitcher from "@/components/StyleSwitcher";
 import BlobPlayground from "@/components/BlobPlayground";
 import { useAudioTrigger } from "@/hooks/useAudioTrigger";
 
@@ -22,8 +21,7 @@ function Page() {
         <Contact />
       </main>
 
-      <BlobPlayground />
-      <StyleSwitcher />
+      <BlobPlayground isMuted={isMuted} />
       <AudioToggle
         isMuted={isMuted}
         isReady={isReady}
