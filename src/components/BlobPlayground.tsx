@@ -42,6 +42,9 @@ function hitTest(
 /** Whether the linear chain should loop (easy toggle for later) */
 const LOOP_PROGRESSION = false;
 
+/** Chord duration in seconds — 4 beats at 125 BPM */
+const CHORD_DURATION = (60 / 125) * 4; // 1.92s
+
 export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
   const { theme } = useTheme();
 
@@ -132,14 +135,14 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
       // Clear any previous single-chord timer
       if (singleChordTimer.current) clearTimeout(singleChordTimer.current);
 
-      synthEngine.playChord(chord, 3);
+      synthEngine.playChord(chord, CHORD_DURATION);
       setPlayingBlobId(blobId);
 
       singleChordTimer.current = setTimeout(() => {
         // Only clear if still showing this blob (progression may have taken over)
         setPlayingBlobId((prev) => (prev === blobId ? null : prev));
         singleChordTimer.current = null;
-      }, 3000);
+      }, CHORD_DURATION * 1000);
     },
     [blobChordMap]
   );
@@ -231,7 +234,7 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
           // Brand new chain — start fresh
           synthEngine.playProgression(newChain, chordMap, {
             loop: isLoop,
-            chordDuration: 3,
+            chordDuration: CHORD_DURATION,
           });
           drumMachine.start();
         }

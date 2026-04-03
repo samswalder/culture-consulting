@@ -25,7 +25,7 @@ interface DrumPattern {
 const PRESETS: Record<DrumPreset, DrumPattern> = {
   classic: {
     label: "Classic House",
-    bpm: 126,
+    bpm: 125,
     kick: [0, 4, 8, 12],
     clap: [4, 12],
     closedHat: [2, 6, 10, 14],
@@ -33,7 +33,7 @@ const PRESETS: Record<DrumPreset, DrumPattern> = {
   },
   disco: {
     label: "Disco Bounce",
-    bpm: 124,
+    bpm: 125,
     kick: [0, 4, 8, 12],
     clap: [4, 12],
     closedHat: [0, 2, 4, 6, 8, 10, 12, 14],
@@ -41,7 +41,7 @@ const PRESETS: Record<DrumPreset, DrumPattern> = {
   },
   funky: {
     label: "Funky Groove",
-    bpm: 122,
+    bpm: 125,
     kick: [0, 3, 8, 11, 12],
     clap: [4, 12],
     closedHat: [1, 3, 5, 7, 9, 11, 13, 15],
@@ -49,7 +49,7 @@ const PRESETS: Record<DrumPreset, DrumPattern> = {
   },
   tech: {
     label: "Tech Drive",
-    bpm: 128,
+    bpm: 125,
     kick: [0, 4, 8, 12],
     clap: [4, 10, 12],
     closedHat: [0, 2, 4, 6, 8, 10, 12, 14],

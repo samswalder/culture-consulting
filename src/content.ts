@@ -28,12 +28,6 @@ export const content = {
         name: "Logan LaHive",
         title: "GP of Long Chicago",
       },
-      {
-        quote:
-          "I've worked with dozens of advisors. Samuel is in a category of his own. He doesn't just advise — he unlocks something in you.",
-        name: "Client Name",
-        title: "CEO, Company",
-      },
     ],
   },
 
@@ -45,7 +39,6 @@ export const content = {
     clients: [
       "CEO + CTO of a deeptech music startup, advising alongside Rick Rubin",
       "CBO of a well-known public company",
-      "Real estate CEO expanding a Michelin-starred restaurant",
       "Managing Partner of a VC firm",
     ],
     philosophyIntro: "My working philosophy comes from science and art.",
