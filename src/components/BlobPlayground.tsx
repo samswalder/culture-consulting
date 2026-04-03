@@ -8,13 +8,29 @@ import { drumMachine } from "@/lib/drumMachine";
 import BlobCircle from "./BlobCircle";
 import ConnectionLines from "./ConnectionLines";
 
-/** Randomize blob positions slightly on each page load */
+/** Generate a random soft pastel color */
+function randomPastel(): { color: string; colorSolid: string } {
+  const h = Math.floor(Math.random() * 360);
+  const s = 55 + Math.random() * 30; // 55-85%
+  const l = 68 + Math.random() * 12; // 68-80%
+  return {
+    color: `hsla(${h}, ${s.toFixed(0)}%, ${l.toFixed(0)}%, 0.30)`,
+    colorSolid: `hsla(${h}, ${s.toFixed(0)}%, ${l.toFixed(0)}%, 0.70)`,
+  };
+}
+
+/** Randomize blob positions and colors on each page load */
 function randomizeBlobs(defs: BlobDef[]): BlobDef[] {
-  return defs.map((blob) => ({
-    ...blob,
-    x: blob.x + (Math.random() - 0.5) * 14,
-    y: blob.y + (Math.random() - 0.5) * 10,
-  }));
+  return defs.map((blob) => {
+    const { color, colorSolid } = randomPastel();
+    return {
+      ...blob,
+      x: blob.x + (Math.random() - 0.5) * 14,
+      y: blob.y + (Math.random() - 0.5) * 10,
+      color,
+      colorSolid,
+    };
+  });
 }
 
 /** Check if a point is within a blob's hit area */
@@ -64,6 +80,9 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
   const [justConnectedId, setJustConnectedId] = useState<string | null>(null);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [playingBlobId, setPlayingBlobId] = useState<string | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipDismissed, setTooltipDismissed] = useState(false);
+  const blobClickCount = useRef(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pointerDownTime = useRef(0);
@@ -253,7 +272,7 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
     };
   }, [playSingleChord]);
 
-  // --- Blob pointer down: start drag + init audio ---
+  // --- Blob pointer down: start drag + init audio + tooltip ---
   const handleBlobPointerDown = useCallback(
     (id: string, e: React.PointerEvent) => {
       e.preventDefault();
@@ -261,8 +280,21 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
       pointerDownTime.current = Date.now();
       pointerDownPos.current = { x: e.clientX, y: e.clientY };
       setDragFrom(id);
+
+      // Tooltip: show on first click, dismiss 2s after second click
+      if (!tooltipDismissed) {
+        blobClickCount.current += 1;
+        if (blobClickCount.current === 1) {
+          setShowTooltip(true);
+        } else if (blobClickCount.current === 2) {
+          setTimeout(() => {
+            setShowTooltip(false);
+            setTooltipDismissed(true);
+          }, 2000);
+        }
+      }
     },
-    [ensureAudio]
+    [ensureAudio, tooltipDismissed]
   );
 
   // Don't render for non-compact themes
@@ -280,6 +312,19 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
         containerRef={containerRef}
         dragLine={dragLine}
       />
+      {showTooltip && (
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
+          style={{
+            color: theme.colors.accent,
+            fontSize: "0.75rem",
+            opacity: tooltipDismissed ? 0 : 0.6,
+            transition: "opacity 0.5s ease-out",
+          }}
+        >
+          click and drag
+        </div>
+      )}
       {blobs.map((blob) => (
         <BlobCircle
           key={blob.id}

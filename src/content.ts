@@ -54,7 +54,7 @@ export const content = {
     description:
       "I work with a handful of clients at a time. If you think we'd be a good fit, reach out.",
     buttonText: "Get in touch",
-    email: "hello@example.com",
+    email: "sam.s.walder@gmail.com",
     subject: "Interested in working together",
     body: "Hi Samuel,\n\nI was referred to you by ",
   },

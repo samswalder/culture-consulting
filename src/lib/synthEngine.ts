@@ -13,15 +13,18 @@
 const N: Record<string, number> = {
   D3: 146.83,
   Eb3: 155.56,
+  E3: 164.81,
   F3: 174.61,
   "F#3": 185.0,
   G3: 196.0,
   A3: 220.0,
   Bb3: 233.08,
+  B3: 246.94,
   C4: 261.63,
   "C#4": 277.18,
   D4: 293.66,
   E4: 329.63,
+  "F#4": 369.99,
 };
 
 const CHORDS: Record<string, number[]> = {
@@ -31,6 +34,7 @@ const CHORDS: Record<string, number[]> = {
   DMaj7: [N.D3, N["F#3"], N.A3, N["C#4"]],
   FMaj7: [N.F3, N.A3, N.C4, N.E4],
   Gmin: [N.G3, N.Bb3, N.D4],
+  Em11: [N.E3, N.G3, N.B3, N.D4, N["F#4"], N.A3],
 };
 
 /* ------------------------------------------------------------------ */
@@ -193,7 +197,12 @@ class SynthEngine {
   setMuted(muted: boolean): void {
     this.muted = muted;
     if (muted) {
-      this.stopProgression();
+      // Silence audio but preserve progression state so extending
+      // the chain still works correctly after unmuting
+      if (this.progTimer) {
+        clearTimeout(this.progTimer);
+        this.progTimer = null;
+      }
       this.stopAll();
     }
   }
@@ -325,6 +334,7 @@ class SynthEngine {
       if (this.progLoop) {
         this.progIndex = 0;
       } else {
+        this.progTimer = null;
         this.onProgressionEnd?.();
         return;
       }

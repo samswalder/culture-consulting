@@ -134,6 +134,40 @@ class DrumMachine {
     return this.muted;
   }
 
+  /* ---- One-shot break/fill ---- */
+
+  /** Play a short drum break for the given duration (seconds) */
+  playBreak(duration = 2): void {
+    if (!this.ctx || !this.output || this.muted) return;
+
+    if (this.ctx.state === "suspended") {
+      this.ctx.resume();
+    }
+
+    const bpm = 125;
+    const step = 60 / bpm / 4; // 16th note
+    const now = this.ctx.currentTime;
+
+    // Fun house break: building snare roll + kick accents + rapid hats
+    // 16 steps at 125 BPM ≈ 1.92s, fits nicely in 2s
+    const pattern = {
+      kick:      [0, 7, 12],
+      clap:      [4, 6, 8, 10, 11, 12, 13, 14, 15],
+      closedHat: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      openHat:   [3, 15],
+    };
+
+    const steps = Math.floor(duration / step);
+    for (let i = 0; i < steps; i++) {
+      const s = i % 16;
+      const t = now + i * step;
+      if (pattern.kick.includes(s)) this.playKick(t);
+      if (pattern.clap.includes(s)) this.playClap(t);
+      if (pattern.closedHat.includes(s)) this.playClosedHat(t);
+      if (pattern.openHat.includes(s)) this.playOpenHat(t);
+    }
+  }
+
   /* ---- Transport ---- */
 
   start(): void {
