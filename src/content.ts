@@ -10,7 +10,7 @@ export const content = {
       "Helping founders and executives build companies that are true to who they are — and outperform because of it.",
     /** Used by compact/single-viewport themes instead of headline + subheadline */
     introText:
-      "My name is Sam. I am an exited founder who raised $20M and had a good outcome. I also play 12 instruments, trained as a computer engineer, and spent 6 years doing science. I work with executives on the most critical parts of their work: fundraising, cofounder relations, and strategy.",
+      "My name is Sam. I am an exited founder who raised $20M and had a good outcome. I also play 9 instruments, trained as a computer engineer, and spent 6 years doing science. I work with executives on the most critical parts of their work: fundraising, cofounder relations, and strategy.",
   },
 
   testimonials: {
