@@ -414,7 +414,7 @@ export default function BlobPlayground({
 
       {/* ---- Mobile: music mode toggle button ---- */}
       <button
-        className="md:hidden fixed bottom-6 left-6 z-50 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300"
+        className="md:hidden fixed bottom-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300"
         onClick={() => onToggleMusicMode?.(!musicMode)}
         style={{
           border: `1px solid ${theme.colors.border}`,
