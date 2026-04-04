@@ -38,7 +38,7 @@ export const content = {
     clientsLabel: "Some of the people I help today:",
     clients: [
       "CEO + CTO of a deeptech music startup, advising alongside Rick Rubin",
-      "CBO of a well-known public company",
+      "Founders of a real estate company",
       "Managing Partner of a VC firm",
     ],
     philosophyIntro: "My working philosophy comes from science and art.",

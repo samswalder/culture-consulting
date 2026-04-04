@@ -5,13 +5,9 @@ import Hero from "@/components/sections/Hero";
 import Testimonials from "@/components/sections/Testimonials";
 import Bio from "@/components/sections/Bio";
 import Contact from "@/components/sections/Contact";
-import AudioToggle from "@/components/AudioToggle";
 import BlobPlayground from "@/components/BlobPlayground";
-import { useAudioTrigger } from "@/hooks/useAudioTrigger";
 
 function Page() {
-  const { initAudio, isMuted, toggleMute, isReady } = useAudioTrigger();
-
   return (
     <>
       <main>
@@ -21,13 +17,7 @@ function Page() {
         <Contact />
       </main>
 
-      <BlobPlayground isMuted={isMuted} />
-      <AudioToggle
-        isMuted={isMuted}
-        isReady={isReady}
-        onToggle={toggleMute}
-        onInit={initAudio}
-      />
+      <BlobPlayground />
     </>
   );
 }

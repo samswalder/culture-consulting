@@ -60,7 +60,6 @@ export default function Contact() {
     if (!synthEngine.isInitialized()) await synthEngine.init();
     if (!drumMachine.isInitialized()) await drumMachine.init();
     synthEngine.playChord("Em11", 2);
-    drumMachine.playBreak(2);
 
     setTimeout(() => setCopied(false), 2000);
   };
