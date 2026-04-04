@@ -335,19 +335,14 @@ export default function BlobPlayground({
   // Don't render for non-compact themes
   if (theme.layout !== "single-viewport") return null;
 
-  const tooltipEl = (
-    <div
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
-      style={{
-        color: theme.colors.accent,
-        fontSize: "0.75rem",
-        opacity: tooltipDismissed ? 0 : 0.6,
-        transition: "opacity 0.5s ease-out",
-      }}
-    >
-      click and drag
-    </div>
-  );
+  const tooltipStyle = {
+    color: theme.colors.accent,
+    fontSize: "0.75rem" as const,
+    opacity: tooltipDismissed ? 0 : 0.6,
+    transition: "opacity 0.5s ease-out",
+  };
+  const tooltipClass =
+    "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none";
 
   return (
     <>
@@ -364,7 +359,11 @@ export default function BlobPlayground({
             containerRef={desktopRef}
             dragLine={dragLine}
           />
-          {showTooltip && tooltipEl}
+          {showTooltip && (
+            <div className={tooltipClass} style={tooltipStyle}>
+              click and drag
+            </div>
+          )}
           {blobs.map((blob) => (
             <BlobCircle
               key={blob.id}
@@ -395,7 +394,11 @@ export default function BlobPlayground({
             containerRef={mobileRef}
             dragLine={musicMode ? dragLine : null}
           />
-          {musicMode && showTooltip && tooltipEl}
+          {musicMode && showTooltip && (
+            <div className={tooltipClass} style={tooltipStyle}>
+              tap and drag
+            </div>
+          )}
           {blobs.map((blob) => (
             <BlobCircle
               key={blob.id}
