@@ -14,7 +14,7 @@ export default function Hero() {
 
   if (compact) {
     return (
-      <section className="py-8 px-6">
+      <section className="pt-8 pb-3 px-6">
         <div className="max-w-3xl">
           <p
             ref={headlineRef}

@@ -380,6 +380,11 @@ class SynthEngine {
   /** Enable looping on the current progression (used when chain closes a cycle) */
   enableLoop(): void {
     this.progLoop = true;
+    // If the progression already finished, restart from the beginning
+    if (!this.progTimer && this.progChain.length > 0) {
+      this.progIndex = 0;
+      this.advanceProgression();
+    }
   }
 
   isProgressionPlaying(): boolean {

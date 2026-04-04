@@ -61,7 +61,13 @@ const LOOP_PROGRESSION = false;
 /** Chord duration in seconds — 4 beats at 125 BPM */
 const CHORD_DURATION = (60 / 125) * 4; // 1.92s
 
-export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
+export default function BlobPlayground({
+  musicMode = false,
+  onToggleMusicMode,
+}: {
+  musicMode?: boolean;
+  onToggleMusicMode?: (mode: boolean) => void;
+}) {
   const { theme } = useTheme();
 
   // Randomize positions on the client only (avoids SSR hydration mismatch)
@@ -78,13 +84,17 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
     toY: number;
   } | null>(null);
   const [justConnectedId, setJustConnectedId] = useState<string | null>(null);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [playingBlobId, setPlayingBlobId] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipDismissed, setTooltipDismissed] = useState(false);
   const blobClickCount = useRef(0);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Separate refs for desktop and mobile containers
+  const desktopRef = useRef<HTMLDivElement>(null);
+  const mobileRef = useRef<HTMLDivElement>(null);
+  // Tracks which container the current pointer interaction is happening in
+  const activeContainerRef = useRef<HTMLDivElement | null>(null);
+
   const pointerDownTime = useRef(0);
   const pointerDownPos = useRef({ x: 0, y: 0 });
   const dragFromRef = useRef<string | null>(null);
@@ -112,13 +122,30 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
     chainRef.current = chain;
   }, [chain]);
 
-  // Sync mute state with synth engine + drums
+  // Clear state when exiting music mode on mobile
   useEffect(() => {
-    const m = isMuted ?? false;
-    synthEngine.setMuted(m);
-    drumMachine.setMuted(m);
-    if (m) setPlayingBlobId(null);
-  }, [isMuted]);
+    if (!musicMode) {
+      setChain([]);
+      setDragFrom(null);
+      setDragLine(null);
+      setPlayingBlobId(null);
+      if (synthEngine.isInitialized()) synthEngine.stopProgression();
+      if (drumMachine.isInitialized() && drumMachine.isRunning())
+        drumMachine.stop();
+    }
+  }, [musicMode]);
+
+  // Prevent body scroll when mobile music mode is active
+  useEffect(() => {
+    if (musicMode) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [musicMode]);
 
   // Set up progression callbacks
   useEffect(() => {
@@ -169,8 +196,8 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
   // --- Pointer move: track drag line and detect hover targets ---
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
-      if (!dragFromRef.current || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
+      if (!dragFromRef.current || !activeContainerRef.current) return;
+      const rect = activeContainerRef.current.getBoundingClientRect();
       setDragLine({
         fromId: dragFromRef.current,
         toX: e.clientX - rect.left,
@@ -180,7 +207,7 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
 
     const onUp = (e: PointerEvent) => {
       const source = dragFromRef.current;
-      const container = containerRef.current;
+      const container = activeContainerRef.current;
 
       if (!source || !container) {
         setDragFrom(null);
@@ -242,7 +269,6 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
 
         if (isExtending && isLoop) {
           // Closing a loop — don't add duplicate, just enable looping
-          // Synth chain stays [A,B,C], loops back to A after C
           synthEngine.enableLoop();
           if (!drumMachine.isRunning()) drumMachine.start();
         } else if (isExtending) {
@@ -272,11 +298,20 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
     };
   }, [playSingleChord]);
 
-  // --- Blob pointer down: start drag + init audio + tooltip ---
+  // --- Blob pointer down: start drag + init audio + determine container ---
   const handleBlobPointerDown = useCallback(
     (id: string, e: React.PointerEvent) => {
       e.preventDefault();
       ensureAudio();
+
+      // Determine which container this interaction is in
+      const target = e.currentTarget as HTMLElement;
+      if (desktopRef.current?.contains(target)) {
+        activeContainerRef.current = desktopRef.current;
+      } else if (mobileRef.current?.contains(target)) {
+        activeContainerRef.current = mobileRef.current;
+      }
+
       pointerDownTime.current = Date.now();
       pointerDownPos.current = { x: e.clientX, y: e.clientY };
       setDragFrom(id);
@@ -300,65 +335,111 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
   // Don't render for non-compact themes
   if (theme.layout !== "single-viewport") return null;
 
-  const playground = (
+  const tooltipEl = (
     <div
-      ref={containerRef}
-      className="relative w-full h-full"
-      style={{ pointerEvents: "none" }}
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
+      style={{
+        color: theme.colors.accent,
+        fontSize: "0.75rem",
+        opacity: tooltipDismissed ? 0 : 0.6,
+        transition: "opacity 0.5s ease-out",
+      }}
     >
-      <ConnectionLines
-        chain={chain}
-        blobs={blobs}
-        containerRef={containerRef}
-        dragLine={dragLine}
-      />
-      {showTooltip && (
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
-          style={{
-            color: theme.colors.accent,
-            fontSize: "0.75rem",
-            opacity: tooltipDismissed ? 0 : 0.6,
-            transition: "opacity 0.5s ease-out",
-          }}
-        >
-          click and drag
-        </div>
-      )}
-      {blobs.map((blob) => (
-        <BlobCircle
-          key={blob.id}
-          blob={blob}
-          isActive={activeBlobs.has(blob.id)}
-          isDragSource={dragFrom === blob.id}
-          justConnected={justConnectedId === blob.id}
-          isPlaying={playingBlobId === blob.id}
-          onPointerDown={handleBlobPointerDown}
-        />
-      ))}
+      click and drag
     </div>
   );
 
   return (
     <>
-      {/* Desktop: fixed right side */}
+      {/* ---- Desktop: fixed right side ---- */}
       <div className="hidden md:block fixed top-0 right-0 w-[40vw] h-screen z-10">
-        {playground}
+        <div
+          ref={desktopRef}
+          className="relative w-full h-full"
+          style={{ pointerEvents: "none" }}
+        >
+          <ConnectionLines
+            chain={chain}
+            blobs={blobs}
+            containerRef={desktopRef}
+            dragLine={dragLine}
+          />
+          {showTooltip && tooltipEl}
+          {blobs.map((blob) => (
+            <BlobCircle
+              key={blob.id}
+              blob={blob}
+              isActive={activeBlobs.has(blob.id)}
+              isDragSource={dragFrom === blob.id}
+              justConnected={justConnectedId === blob.id}
+              isPlaying={playingBlobId === blob.id}
+              onPointerDown={handleBlobPointerDown}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Mobile: floating button + overlay */}
-      <div className="md:hidden">
-        <button
-          onClick={() => setIsMobileOpen(true)}
-          className="fixed bottom-6 left-6 z-50 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm transition-colors duration-200"
-          style={{
-            border: `1px solid ${theme.colors.border}`,
-            backgroundColor: `${theme.colors.background}cc`,
-            color: theme.colors.accent,
-          }}
-          aria-label="Open music playground"
-          title="Music playground"
+      {/* ---- Mobile: always-visible blobs, decorative ↔ interactive ---- */}
+      <div
+        className="md:hidden fixed inset-0"
+        style={{ zIndex: musicMode ? 45 : 0 }}
+      >
+        <div
+          ref={mobileRef}
+          className="relative w-full h-full"
+          style={{ pointerEvents: "none" }}
         >
+          <ConnectionLines
+            chain={musicMode ? chain : []}
+            blobs={blobs}
+            containerRef={mobileRef}
+            dragLine={musicMode ? dragLine : null}
+          />
+          {musicMode && showTooltip && tooltipEl}
+          {blobs.map((blob) => (
+            <BlobCircle
+              key={blob.id}
+              blob={blob}
+              isActive={musicMode ? activeBlobs.has(blob.id) : false}
+              isDragSource={musicMode ? dragFrom === blob.id : false}
+              justConnected={musicMode ? justConnectedId === blob.id : false}
+              isPlaying={musicMode ? playingBlobId === blob.id : false}
+              onPointerDown={handleBlobPointerDown}
+              sizeScale={musicMode ? 0.85 : 0.6}
+              interactive={musicMode}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* ---- Mobile: music mode toggle button ---- */}
+      <button
+        className="md:hidden fixed bottom-6 left-6 z-50 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300"
+        onClick={() => onToggleMusicMode?.(!musicMode)}
+        style={{
+          border: `1px solid ${theme.colors.border}`,
+          backgroundColor: `${theme.colors.background}cc`,
+          color: theme.colors.accent,
+        }}
+        aria-label={
+          musicMode ? "Close music playground" : "Open music playground"
+        }
+      >
+        {musicMode ? (
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        ) : (
           <svg
             width="16"
             height="16"
@@ -373,40 +454,8 @@ export default function BlobPlayground({ isMuted }: { isMuted?: boolean }) {
             <circle cx="17.5" cy="15.5" r="2.5" />
             <path d="M8 17V5l12-2v12" />
           </svg>
-        </button>
-
-        {isMobileOpen && (
-          <div
-            className="fixed inset-0 z-[60]"
-            style={{ backgroundColor: theme.colors.background }}
-          >
-            <button
-              onClick={() => setIsMobileOpen(false)}
-              className="absolute top-4 right-4 z-[61] w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-200"
-              style={{
-                border: `1px solid ${theme.colors.border}`,
-                color: theme.colors.foreground,
-              }}
-              aria-label="Close music playground"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            {playground}
-          </div>
         )}
-      </div>
+      </button>
     </>
   );
 }
