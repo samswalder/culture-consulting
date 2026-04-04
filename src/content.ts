@@ -18,7 +18,7 @@ export const content = {
     items: [
       {
         quote:
-          "Sam, you're definitely the leading edge of CEOs with AI adoption, all for the right reasons.",
+          "Sam is definitely the leading edge of CEOs with AI adoption, all for the right reasons.",
         name: "Alexis Ohanian",
         title: "Founder of Reddit and 776.vc",
       },
@@ -27,6 +27,12 @@ export const content = {
           "Sam's passion is not just a joy to witness, but serves as a constant reminder of why we founders do what we do.",
         name: "Logan LaHive",
         title: "GP of Long Chicago",
+      },
+      {
+        quote:
+          "I worked with Sam for 7 years, from incubation through the sale of the company. He knows the highs and lows of startup life, from rapid growth and successful funding rounds, to pivots, key employee departures, and getting yelled at by investors. Throughout it all Sam kept his sense of humor and always cared deeply about the company and culture he was building.",
+        name: "Bob Meese",
+        title: "CBO of Duolingo",
       },
     ],
   },
