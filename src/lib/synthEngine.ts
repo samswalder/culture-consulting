@@ -166,6 +166,10 @@ class SynthEngine {
   async init(): Promise<void> {
     if (this.ctx) return;
     this.ctx = new AudioContext();
+    // Mobile browsers require resume() in a user gesture
+    if (this.ctx.state === "suspended") {
+      await this.ctx.resume();
+    }
     this.output = this.ctx.createGain();
     this.output.gain.value = 0.5; // master volume
     this.output.connect(this.ctx.destination);
