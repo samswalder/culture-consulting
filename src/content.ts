@@ -10,7 +10,7 @@ export const content = {
       "Helping founders and executives build companies that are true to who they are — and outperform because of it.",
     /** Used by compact/single-viewport themes instead of headline + subheadline */
     introText:
-      "My name is Sam. I am an exited founder who raised $20M and had a good outcome. I also play 9 instruments, trained as a computer engineer, and spent 6 years doing science. I work with executives on the most critical parts of their work: fundraising, cofounder relations, and strategy.",
+      "My name is Sam. I am an exited founder who raised $20M and had a good outcome. I also play 9 instruments, trained as a computer engineer, spent 6 years working in science, and trained in Japanese Tea Ceremony under a master decorated with the Order of the Rising Sun. I work with executives on the most critical parts of their work: fundraising, cofounder relations, and strategy.",
   },
 
   testimonials: {
@@ -34,6 +34,12 @@ export const content = {
         name: "Bob Meese",
         title: "CBO of Duolingo",
       },
+      {
+        quote:
+          "I don’t know what it is about him but he makes me think differently about things.",
+        name: "Investment banking leader",
+        title: "",
+      },
     ],
   },
 
@@ -46,6 +52,7 @@ export const content = {
       "CEO + CTO of a deeptech music startup, advising alongside Rick Rubin",
       "Founders of a real estate company",
       "Managing Partner of a VC firm",
+      "Management team at a leading global investment bank",
     ],
     philosophyIntro: "My working philosophy comes from science and art.",
     philosophyQuotes: [

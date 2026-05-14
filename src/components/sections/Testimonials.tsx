@@ -24,7 +24,8 @@ function TestimonialCard({
           &ldquo;{testimonial.quote}&rdquo;
         </p>
         <footer className="text-sm" style={{ color: "var(--accent)" }}>
-          {testimonial.name}, {testimonial.title}
+          {testimonial.name}
+          {testimonial.title && `, ${testimonial.title}`}
         </footer>
       </blockquote>
     );
@@ -39,8 +40,12 @@ function TestimonialCard({
         <span className="font-medium" style={{ color: "var(--foreground)" }}>
           {testimonial.name}
         </span>
-        <span className="mx-2">&mdash;</span>
-        <span>{testimonial.title}</span>
+        {testimonial.title && (
+          <>
+            <span className="mx-2">&mdash;</span>
+            <span>{testimonial.title}</span>
+          </>
+        )}
       </footer>
     </blockquote>
   );
