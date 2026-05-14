@@ -3,6 +3,7 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { useTheme } from "@/themes/ThemeProvider";
 import { content } from "@/content";
+import ContactCTA from "@/components/sections/ContactCTA";
 
 export default function Hero() {
   const { theme } = useTheme();
@@ -10,6 +11,7 @@ export default function Hero() {
 
   const headlineRef = useScrollReveal<HTMLHeadingElement>({ delay: 0.2 });
   const subtitleRef = useScrollReveal<HTMLParagraphElement>({ delay: 0.5 });
+  const descriptionRef = useScrollReveal<HTMLDivElement>({ delay: 0.25 });
   const clientsRef = useScrollReveal<HTMLDivElement>({ delay: 0.3 });
 
   if (compact) {
@@ -18,12 +20,24 @@ export default function Hero() {
         <div className="max-w-3xl">
           <p
             ref={headlineRef}
-            className="text-sm leading-relaxed mb-6"
+            className="text-sm leading-relaxed"
           >
             {content.hero.introText}
           </p>
 
-          <div ref={clientsRef}>
+          <div
+            ref={descriptionRef}
+            className="mt-6 pt-6"
+            style={{ borderTop: `1px solid ${theme.colors.border}` }}
+          >
+            <ContactCTA />
+          </div>
+
+          <div
+            ref={clientsRef}
+            className="mt-6 pt-6"
+            style={{ borderTop: `1px solid ${theme.colors.border}` }}
+          >
             <p
               className="text-sm leading-relaxed mb-3"
               style={{ color: theme.colors.accent }}
