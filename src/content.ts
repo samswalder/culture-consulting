@@ -30,13 +30,13 @@ export const content = {
       },
       {
         quote:
-          "I worked with Sam for 7 years, from incubation through the sale of the company. He knows the highs and lows of startup life, from rapid growth and successful funding rounds, to pivots, key employee departures, and getting yelled at by investors. Throughout it all Sam kept his sense of humor and always cared deeply about the company and culture he was building.",
+          "I worked with Sam for 7 years from incubation through the sale of the company. He knows rapid growth, successful funding rounds, pivots, key employee departures, and getting yelled at by investors. Throughout it all Sam kept his sense of humor and always cared deeply about the company and culture he was building.",
         name: "Bob Meese",
         title: "CBO of Duolingo",
       },
       {
         quote:
-          "I don’t know what it is about him but he makes me think differently about things.",
+          "I don’t know what it is about him but he makes me think differently about things...",
         name: "Investment banking leader",
         title: "",
       },
@@ -50,7 +50,6 @@ export const content = {
     clientsLabel: "Some of the people I help today:",
     clients: [
       "CEO + CTO of a deeptech music startup, advising alongside Rick Rubin",
-      "Founders of a real estate company",
       "Managing Partner of a VC firm",
       "Management team at a leading global investment bank",
     ],
