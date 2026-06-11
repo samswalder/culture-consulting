@@ -49,7 +49,7 @@ export const content = {
       "I am an exited founder who raised $20M and had a good outcome. My most valuable skills are in fundraising and cofounder relations.",
     clientsLabel: "Some of the people I help today:",
     clients: [
-      "CEO + CTO of a deeptech music startup, advising alongside Rick Rubin",
+      "CEO + CTO of a deeptech music startup",
       "Managing Partner of a VC firm",
       "Management team at a leading global investment bank",
     ],
