@@ -24,7 +24,7 @@ export default function Contact() {
   const { theme } = useTheme();
   const compact = theme.layout === "single-viewport";
 
-  const headingRef = useScrollReveal<HTMLElement>();
+  const headingRef = useScrollReveal<HTMLHeadingElement>();
   const ctaRef = useScrollReveal<HTMLDivElement>({ delay: 0.3 });
 
   const [showPopup, setShowPopup] = useState(false);
