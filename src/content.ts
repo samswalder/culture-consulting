@@ -24,13 +24,13 @@ export const content = {
       },
       {
         quote:
-          "Sam's passion is not just a joy to witness, but serves as a constant reminder of why we founders do what we do.",
+          "Sam's passion is not just a joy to witness, but serves as a constant reminder of why we founders and creators do what we do.",
         name: "Logan LaHive",
         title: "GP of Long Chicago",
       },
       {
         quote:
-          "I worked with Sam for 7 years from incubation through the sale of the company. He knows rapid growth, successful funding rounds, pivots, key employee departures, and getting yelled at by investors. Throughout it all Sam kept his sense of humor and always cared deeply about the company and culture he was building.",
+          "I worked with Sam for 7 years. Throughout it all Sam kept his sense of humor and always cared deeply about the company and culture he was building.",
         name: "Bob Meese",
         title: "CBO of Duolingo",
       },
